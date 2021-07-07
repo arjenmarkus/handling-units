@@ -1,10 +1,12 @@
 # Units of measure in (Fortran) programs
 
+[![CI](https://github.com/arjenmarkus/handling-units/actions/workflows/CI.yml/badge.svg)](https://github.com/arjenmarkus/handling-units/actions/workflows/CI.yml) [[__View Paper Preview__](https://github.com/arjenmarkus/handling-units/blob/previews/main/handling_units_dimensions.pdf)]
+
 Many solutions have been suggested for a wide range of programming languages to deal with
 *units of measure* in a consistent way. And by that we mean:
 
 * Variable `a` may represent a length and variable `b` may represent a temperature. The program
-  may want to multiply them or divide them, à*b`or `a/b` but the sum `a+b` is not defined.
+  may want to multiply them or divide them, `a*b`or `a/b` but the sum `a+b` is not defined.
 * Input may be expected in meters, but may I use inches instead? Should this be
   seen as an error or is it possible to automatically convert to the right unit?
 
