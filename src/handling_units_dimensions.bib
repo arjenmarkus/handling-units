@@ -1,0 +1,142 @@
+% Encoding: UTF-8
+
+@Article{CamFortCorrectness,
+  author   = {Contrastin, Mistral and Rice, Andrew and Danish, Mathhew},
+  journal  = {Computing in Science},
+  title    = {Units-of-Measure Correctness in Fortran Programs},
+  year     = {2016},
+  pages    = {102-107},
+  comment  = {The authors describe a system, Camfort, for checking the correctness of Fortran programs with respect to units and dimensions of variables and expressions. The system relies on inferring the units from the expressions used. It identifies the variables that determine the actual units.
+Be aware of the express limitation: it analyses dimensions, it does not support unit conversions.},
+  file     = {:D\:/fortran/fortran-lang/units-doc/contrastin-units.pdf:PDF},
+  keywords = {programming, Fortran, units-of-measure},
+  url      = {https://www.cl.cam.ac.uk/~acr31/pubs/contrastin-units.pdf},
+}
+
+@Article{EvolivingFortranTypes,
+  author   = {Orchard, Dominic and Rice, Andrew and Oshmyan, Oleg},
+  journal  = {Journal of Computational Science},
+  title    = {Evolving Fortran types with inferring units-of-measure},
+  year     = {2015},
+  pages    = {156-162},
+  volume   = {9},
+  comment  = {The authors describe a system, Camfort, to analyse the dimensional consistency in Fortran programs. The article describes in details the mechanism used to identify the actual expressions.
+Note: the system analyses the dimensions, not units. What is more, neither this nor the successor describe how the system relates to actual programming practice.},
+  doi      = {10.1016/j.jocs.2015.04.018},
+  file     = {:1-s2.0-S1877750315000563-main.pdf:PDF},
+  keywords = {programming, Fortran, units-of-measure},
+  url      = {https://doi.org/10.1016/j.jocs.2015.04.018},
+}
+
+@Electronic{PhysicalEngineeringUnitsN2113,
+  author       = {Snyder, Van},
+  organization = {j3-fortran},
+  title        = {Physical and Engineering Units of Measure},
+  url          = {https://github.com/j3-fortran/fortran\_proposals/issues/50},
+  year         = {2019},
+  comment      = {The proposal of Van Snyder about supporting units of measure in Fortran. This proposal addresses the conversion of units but also enforces the programmer to specify the units for variables explicitly. It is discussed in some length in one of the articles on Camfort.},
+  keywords     = {Fortran, standard-proposal, units-of-measure, programming},
+}
+
+@Electronic{RustDimensioned,
+  author       = {Rust},
+  organization = {Rust},
+  title        = {Crate dimensioned},
+  url          = {https://docs.rs/dimensioned/0.7.0/dimensioned/},
+  year         = {s.a.},
+  comment      = {Rust package focusing on dimensional analysis and correctness. Seems to be limited to SI units.},
+  keywords     = {Rust, rust-package, units-of-measure},
+}
+
+@Electronic{BlogAdaPhysicalUnitsGeneric,
+  author       = {Moy, Yannick and Becker, Martin and Regnath, Emanuel},
+  organization = {Ada Core},
+  title        = {Physical Units Pass the Generic Test},
+  url          = {https://blog.adacore.com/physical-units-pass-the-generic-test},
+  year         = {s.a.},
+  comment      = {Blog explaining how an Ada package for dealing with physical units can be adjusted to allow for generics to retain units. This was a limitation of the original approach.},
+  keywords     = {Ada, units-of-measure, programming},
+}
+
+@Electronic{DimensionalityCheckingAda,
+  author       = {Pucci, Vincent and Schonberg, Edmond},
+  organization = {Ada Core},
+  title        = {Implementation of a simple dimensionality checkng system in Ada 2012},
+  url          = {https://blog.adacore.com/uploads/dc.pdf},
+  year         = {s.a.},
+  comment      = {System for checking the dimensionality of calculations in Ada, requiring support in the compiler.},
+  file         = {:dc.pdf:PDF},
+  keywords     = {Ada, programming, compiler-support, units-of-measure},
+}
+
+@Electronic{QuaffFortranPackage,
+  author   = {Richardson, Brad},
+  title    = {quaff - Quantities for Fortran. Make math with units more convenient.},
+  url      = {https://gitlab.com/everythingfunctional/quaff},
+  year     = {2020},
+  comment  = {Complete package for dimensions and unit conversions. Relies on types defined in the package, but these can easily be extended. Main issue: supporting new units requires a lot of code.},
+  keywords = {Fortran. package, units-of-measure},
+}
+
+@Electronic{SimConFPTCheckingUnits,
+  author       = {SimCon},
+  organization = {Software Validation},
+  title        = {Research - Physical Units and DImensions},
+  url          = {http://www.simconglobal.com/units\_and\_dimensions.html},
+  year         = {2015},
+  comment      = {Part of the FPT tool for checking the dimensional correctness of a Fortran program. Allows iterative annotation to refine the analysis.},
+  keywords     = {Fortran, FPT, tool, units-of-measure},
+}
+
+@Electronic{GrantPettyPhysUnits,
+  author   = {Petty, Grant},
+  title    = {PHYSUNITS module},
+  url      = {http://rime.aos.wisc.edu/gpetty/?page\_id=684},
+  year     = {s.a.},
+  comment  = {Module using run-time checking for guaranteeing dimensional consistency. The variables are defined as a derived type that holds the dimensions. To reduce effect on the performance the package can be compiled without dimension checking.},
+  keywords = {Fortran, package, units-of-measure, package},
+}
+
+@Electronic{SciNimUnchained,
+  author       = {Keller, Fabian and Granstr\"om, Hugo and Vindaar and Caillaud, Regis},
+  organization = {SciNim},
+  title        = {Unchain - Compile time only units checking},
+  url          = {https://github.com/SciNim/Unchained},
+  year         = {2021},
+  comment      = {The package is capable of checking SI units with and without prefixes as well as some imperial units. One particularly nice aspect is that it does not need a predefinition of combinations of units. Also the checks are done at compile-time.},
+  keywords     = {Nim, package, units-of-measure},
+}
+
+@Electronic{DimensionalAnalysis,
+  author       = {Wikipedia},
+  organization = {Wikipedia},
+  title        = {Dimensional analysis},
+  url          = {https://en.wikipedia.org/wiki/Dimensional\_analysis},
+  year         = {2021},
+  comment      = {Extensive explanation of dimensional analysis},
+  keywords     = {dimensional-analysis},
+}
+
+@Article{PhysUnitsPetty,
+  author   = {Petty, Grant W.},
+  journal  = {Software practice and experience},
+  title    = {Automated computation and consistency checking of physical dimensions and units in scientific programs},
+  year     = {2001},
+  pages    = {1067-076},
+  volume   = {31},
+  doi      = {10.1002/spe.401},
+  keywords = {Fortran, package, run-time, units-of-measure},
+  url      = {https://onlinelibrary.wiley.com/doi/abs/10.1002/spe.401},
+}
+
+@Electronic{FPTSymbolLives,
+  author       = {Farrimond, Brian and Collins, John},
+  organization = {SimCon},
+  title        = {Dimensional Inference Using Symbol Lives},
+  url          = {http://www.simconglobal.com/farrimond\_and\_collins\_2007\_dimensional\_inference\_using\_symbol\_lives.pdf},
+  year         = {s.a.},
+  comment      = {The theory  beind the dimensional checking by FPT},
+  keywords     = {fortran, dimensional-analysis, units-of-measure},
+}
+
+@Comment{jabref-meta: databaseType:bibtex;}
