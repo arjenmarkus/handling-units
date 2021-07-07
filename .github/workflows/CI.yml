@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  APT_DEPS: texlive-latex-recommended texlive-latex-extra texlive-extra-utils latexdiff perl rubber graphviz
+  APT_DEPS: texlive-latex-recommended texlive-latex-extra texlive-extra-utils texlive-publishers latexdiff perl rubber graphviz
   REPO_URL: https://github.com/arjenmarkus/handling-units
   TEXTIDOTE_URL: https://github.com/sylvainhalle/textidote/releases/download/v0.8.2/textidote_0.8.2_all.deb
 
