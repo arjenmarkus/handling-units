@@ -4,10 +4,10 @@ GRAPH_SRCS=
 GRAPHS=$(GRAPH_SRCS:.gv=.pdf)
 
 all: $(GRAPHS)
-	rubber --pdf --into tex $(SRC)
+	rubber --pdf --into src $(SRC)
 
 clean:
-	rubber --clean	--into tex $(SRC)
+	rubber --clean	--into src $(SRC)
 
 count:
 	texcount $(SRC)
@@ -15,8 +15,8 @@ count:
 diff: DIFF_FILE_CMD=$(shell latexdiff-vc src/handling_units_dimensions.tex -r origin/main --force|grep Generated|cut -d\  -f4)
 
 diff: $(GRAPHS)
-	rubber --pdf --into tex $(DIFF_FILE_CMD)
-	rubber --clean --into tex $(DIFF_FILE_CMD)
+	rubber --pdf --into src $(DIFF_FILE_CMD)
+	rubber --clean --into src $(DIFF_FILE_CMD)
 
 spellcheck: $(SRC).txt
 	codespell -I dictionary.txt $(SRC).txt
