@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 SRC=src/handling_units_dimensions.tex
-GRAPH_SRCS=""
+GRAPH_SRCS=
 GRAPHS=$(GRAPH_SRCS:.gv=.pdf)
 
 all: $(GRAPHS)
