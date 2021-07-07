@@ -1,0 +1,342 @@
+\documentclass{article}
+\begin{document}
+
+\title{What is 1~kg + 0.1~m? Handling dimensions and units of measure in a program}
+
+\author{Arjen Markus, Brad Richardson}
+
+\maketitle
+
+\abstract
+Most, if not all, programs that perform numerical computations of some kind or other need to deal with
+the units of measure in which their variables are expressed. Many solutions for the general problem
+have been proposed, but the problem is more difficult than it looks at first sight. In this article we
+attempt to give insight in the various aspects and what the proposed solutions can and cannot do.
+
+\section{Introduction}
+In almost all programs that perform numerical computations the question arises whether the units of measure have
+been treated correctly. For instance: the sum of a variable that represents a mass and a variable that represents
+a length is undefined, yet for most computer languages, the variables would probably be simple floating-point
+numbers and it is the burden of the programmer to make sure that they are used in the right way, that is,
+two masses can be added and you can multiply or divide a mass by a length, but the sum or the difference has no meaning
+and so should not pop up in the source code.
+
+Various solutions have been proposed for many different programming languages, but there does not seem to be a
+silver bullet (cf. \ref{ExistingSolutions}). Examination of the publications on these solutions show several
+classes of solutions:
+\begin{itemize}
+\item
+Variables in the source code are decorated with static features that represent the units of measure
+\cite{DimensionalityCheckingAda, BlogAdaPhysicalUnitsGeneric, QuaffFortranPackage, PhysicalEngineeringUnitsN2113}. The burden is
+on the programmer to provide these features. Depending on the language they are extensions of simple floating-point numbers
+or specific additions to the language itself, requiring support from the language tools (compilers and linkers).
+\item
+A preprocessor/static analyser is developed that helps identify violations of the arithmetic rules for units of measure
+\cite{SimConFPTCheckingUnits}.
+Typically, the programmer annotates the variables via special comments, so that the analysis can be refined.
+\item
+Rather than a static checker in the form of a compiler or a preprocessor, all (relevant) variables are defined to have
+a dynamic set of dimensions and the checks are made at run-time \cite{PhysUnitsPetty}. This clearly impacts the performance, but makes for
+a light-weight solution, because the developer of the package can use the standard facilities offered by the programming
+language.
+\end{itemize}
+
+Surprisingly, however, while the publications discuss in more or less detail the techniques used and how the user can use
+the solutions to their benefit, none seem to discuss the characteristics of units of measure and how these play a role
+in the average program. In fact, the distinction between \emph{dimension} and \emph{unit} is seldom made explicitly. This
+article is meant to explore precisely these characteristics and how they influence the design of a programming solution.
+
+
+\section{Dimensions and units}
+First of all, we need to be clear about what a dimension is and what a unit is. In science and engineering we typically
+rely on the \emph{Syst\`eme International} for defining dimensions and units, but in finance or economics other systems
+are of importance. But let us begin with the SI units -- or dimensions.
+
+A dimension is the general aspect of some measure. Here is an arbitrary definition found on the Internet:
+"a measurable extent of a particular kind, such as length, breadth, depth, or height." The SI distinguishes seven
+basic dimensions: mass (M), length (L), absolute temperature ($\Theta$), time (T), amount of substance (N), electric current (I)
+and luminous intensity (J). Dimensions can be combined, for instance a surface area would be a squared length -- L$^2$, or
+a density would be mass divided by length to the power three -- M/L$^3$.
+
+Many solutions that help verifying that the program code does the right thing as far as units in the expressions are concerned
+limit themselves to \emph{dimensional analysis}. Small wonder, because the \emph{units of measure} in which the actual
+value of a quantity is expressed, are legion: common units for length are meter, centimeter, inch, foot, kilometer, mile and
+so on. Each has the dimension of length, but each is numerically different. So, whether the solution allows you to work with
+expressions like 1~m~+~10~inch very much depends on whehther it does \emph{unit conversions} or not.
+
+
+\section{Use cases}
+Within a typical program, be it engineering or economical, you will find different usage patterns:
+
+\subsection*{Input/output}
+The user should be able to provide the data in a convenient form, including a convenient unit. The program may work in meters,
+but to specify the size of an atom in meters is not the most friendly possibility. Likewise for output.
+
+\subsection*{Typical expressions}
+Expressions in which the variables and constants have dimensions and consequently units of measure come in various
+categories. Here are a few:
+\begin{itemize}
+\item
+\emph{Mathematical formulae}:
+
+\noindent Consider the area of a circle:
+\begin{equation}
+    A = \pi R^2
+\end{equation}
+%
+In this formula the radius $R$ has the dimension $L$ (length) and the area $A$ has the dimension $L^2$ (length squared). The
+constant $\pi$ is essentially unitless. To deal with this formula, the system must either recognise that dimensions can
+be multiplied, forming new combinations, or it must be told that both $L$ and $L^2$ are allowed.
+
+But if you were to calculate the mass of a cylinder from its radius $R$, height $H$ and the density of the material $\rho$
+via the slightly more complicated formula:
+\begin{equation}
+    M = \rho \pi R^2 L
+\end{equation}
+\noindent the system now has to deal with a dimension $M L^{-3}$ for the density $\rho$ as well as $L^2$ and $L$. Depending on the way the
+formula is programmed and the way the compiler (or the executable program) handles this expression, we may encounter the
+following intermediate results:
+
+\vspace{\baselineskip}
+\begin{tabular}{ll}
+\hline
+Density multiplied by length                       &   $M L^{-3} \cdot L$   \\
+Density multiplied by length squared               &   $M L^{-3} \cdot L^2$ \\
+Density multiplied by length cubed                 &   $M L^{-3} \cdot L^3$ \\
+Length squared multiplied by length                &   $L^2 \cdot L$        \\
+Density times length squared multiplied            &   $(M L^{-1}) \cdot L$ \\
+by length                                          &                        \\
+\hline
+\end{tabular}
+\vspace{\baselineskip}
+
+\noindent and possibly others. In short: expressions that involve variables and constants with units of measure can generate
+new combinations of dimensions.
+
+It may seem that the dimensions are raised to integer powers, but rational powers can also arise, as in the period $T$ for
+a harmonic pendulum:
+\begin{equation}
+    T = 2 \pi \sqrt{\frac{l}{g}}
+\end{equation}
+
+\item
+\emph{Empirical formulae}:
+
+\noindent While mathematical formulae are usually rather "crisp", with clear definitions of exponents and constants, that
+is not so for empirical or semi-empirical formulae. Here is an example, a relation between the water level $h$ and the
+flow rate $Q$ in some unspecified river:
+%
+\begin{equation}
+    Q = 5.3 \cdot h^{2.7}
+\end{equation}
+%
+The water level must be expressed in meters relative to a reference level and the flow rate is in $m^3/s$. If you were
+to express the water level in fathoms instead, the result would be completely wrong. It would even be wrong if you
+expressed the water level relative to another reference level than implied in the formula.
+
+This type of formula can only be used with a lot of background information, information that may be found in the
+comments or the documentation or simply in the heads of the users of the program, because they have been working with
+it for years.
+
+\item
+\emph{Chemical formulae}:
+
+According to the Syst\`eme Internationale amounts of a substance are to be expressed in \emph{moles}, the number of molecules or atoms
+or ions divided by Avogrado's number. This is a very convenient way to do calculations regarding chemical reactions.
+For instance, this equilibrium between CO$_2$ and HCO$_3^-$ in water:
+\begin{equation}
+    CO_2 + H_2O \rightleftharpoons HCO_3^- + H^+
+\end{equation}
+%
+The reaction constant is (since the amount of water normally exceeds the amounts of the other substances by many
+orders of magnitude, it is essentially constant and can be absorbed in the reaction constant):
+\begin{equation}
+    K = \frac{[CO_2]}{[HCO_3^-][H^+]} \rightarrow \textrm{mol}^{-1}
+\end{equation}
+%
+\noindent but there are three molecules/ions involved, so actually three different molar units.
+
+\item
+\emph{Financial/economic expressions}:
+
+As engineers with physical or chemical background we are used to thinking in terms of the SI dimensions and units, or
+perhaps imperial units like inches and ounces. In other areas of computation very different dimensions are involved.
+Consider the gross domestic product, GDP. It is expressed as the amount of currency per year. And the
+exchange rate of dollars to euros or yens involve the ratio of two currencies. Formally, that may be a dimensionless
+value, but you should not use the wrong way around. A unit checking mechanism therefore might be required to
+distinguish the exchange rate dollar/euro from the rate euro/dollar.
+
+But even seemingly dimensionless numbers require some care: the number of inhabitants of a city is a mere count without
+a dimension, but it does not make sense to add a bare number like $100$ to it, unless that number also represents some
+number of people.
+
+And what to think of percentages? Combining two percentages $\alpha$ and $\beta$ should be done by adding them, but by
+a formula like:
+\begin{equation}
+    \gamma = ((1 + \frac{\alpha}{100}) \cdot (1 + \frac{\beta}{100}) - 1) \cdot 100\%
+\end{equation}
+\end{itemize}
+
+\subsection*{Dimensional analysis}
+
+The very least we may require from a solution for the problem we consider here is that it checks the dimensional correctness
+of expressions. This means that the arithmetic for dimensions is checked and verified \cite{DimensionalAnalysis}:
+\begin{itemize}
+\item
+Multiplication and division is possible with any combination of dimensions, but leads to a new combination.
+\item
+Addition and subtraction is possible only when the dimensions of the terms are identical.
+\item
+Exponentiation is -- in general -- limited to rational powers. One may argue whether, like in the case of empirical
+formulae, exponentiation to some arbitrary power implicitly means the unit is ignored.
+\item
+Elementary functions as $sin$ and $log$ do not take arguments which have a dimension.
+\end{itemize}
+
+Things become much more complicated if we also require conversion of units be taken into account. Quite apart from
+the vast number of units that is in use for the various basic dimensions or the combined dimensions that are derived
+from them, some units of measure do not adhere to the above general rules.
+
+The first example is units of temperature other than \emph{kelvin}. Suppose you were to add a temperature of $10 ^\circ C$
+and $20 ^\circ C$ -- or the same values in degrees Fahrenheit. The na\"ive result is $30 ^\circ C$, or about $303 K$, but if this was an
+allowable operation, we could also convert the two terms first to kelvin and then the result would be quite different:
+$ 283 K + 293 K = 776 K$. You can, however, subtract two temperatures and you can add a temperature and a temperature difference.
+
+A second example is the position on the globe: A position of~$100^\circ$ longitude differs $10^\circ$ from a position~$110^\circ$
+(same latitude), but the distance in kilometers depends on the latitude.
+
+Ideally, a programming solution for checking the dimensions (and units) used in a program would take all such considerations
+into account.
+
+\subsection*{General calculator}
+
+As an extension of the requirement on flexible input and output, we may also want the program to support interactive use,
+as in a general calculator. Feed it data with different units of length and it prints the sum in the unit of your choice.
+
+\subsection*{State vector}
+Some of the solutions that have been suggested define a variable to have a fixed unit or dimension. But that presents
+a problem if you have an array of which each element can have a different dimension. Here is a simple example,
+a (forced) harmonic oscillator:
+\begin{equation}
+    \frac{d^2 x}{dt^2} - kx = F(t)
+\end{equation}
+
+The system has two state variables, the position ($L$) and the velocity ($L T^{-1}$). It is natural to put these two
+state variables into an array and solve the system of equations via a standard ODE solver:
+\begin{verbatim}
+    real :: x(2)
+
+    x(1) = 1.0
+    x(2) = 0.0
+
+    do i = 1,times
+        call solve( x, t, dt, func )
+        write(*,*) t, x
+    enddo
+\end{verbatim}
+
+\subsection{Dynamic units of measure}
+Another question that arises in every day programming practice is whether dimensions (or units) are static properties
+of a variable or not. \cite{SimconFPTSymbolLives} explicitly consider this possibility, as illustrated by the following
+code fragment:
+
+\begin{verbatim}
+! Sort the tables by weight
+change_f = .TRUE.
+DO WHILE (change_f)
+    DO i = 2, n
+        IF (weight(i) < weight(i-1)) THEN
+            temp = weight( i )
+            weight( i ) = weight( i-1 )
+            weight( i-1 ) = temp
+            temp = height( i )
+            height( i ) = height( i-1 )
+            height( i-1 ) = temp
+            change_f = .TRUE.
+        ENDIF
+    ENDDO
+ENDDO
+\end{verbatim}
+
+The variable \verb+temp+ is used first as a weight ($M$) and then as a height ($L$). If the dimension of each variable were
+a static property -- which allows checking at compile-time -- then this usage pattern would be prohibited. In the proposal
+by \cite{PhysicalEngineeringUnitsN2113} a similar situation is described: here it is suggested to allow dimensionally polymorphic
+functions that inherit the dimension of the result from their arguments. One example, mentioned in \cite{SimConFPTCheckingUnits},
+is the \emph{maximum} function -- all of its arguments should have the same dimension (unit) and the result will be that dimension
+(or, more precisely, unit).
+
+
+\section{Design questions}
+Notes -- to be worked out:
+
+Ideally: compile-time checks -- but completely doable?
+
+Input and output -- respect the units
+
+Distinction between units and dimensions
+
+Should variables have a fixed dimension or a fixed unit?
+
+What about performance if we need to do run-time checks?
+
+Burden on the programmer
+
+Error reporting
+
+
+
+%\section{Simple examples}
+%\emph{Consider:}
+%
+%\begin{equation}
+%   \frac{dC}{dt} = \frac{r}{H} (C_s - C) - k B
+%\end{equation}
+%\noindent
+%\begin{tabular}{lll}
+%$r$   & reaeration coefficient   & [$m/day$]    \\
+%$H$   & depth                    & [$m$]        \\
+%$C$   & concentration oxygen     & [$g/m^3$]    \\
+%$C_s$ & saturation concentration & [$g/m^3$]    \\
+%$k$   & decay rate BOD           & [$day^{-1}$] \\
+%$B$   & concentration BOD        & [$g/m^3$]    \\
+%\end{tabular}
+%
+%Compile-time checks:
+%
+%Depending on the way the formula is actually written and treated by the compiler, we get combinations of:
+%\begin{itemize}
+%\item
+%Units [$m/day$] and [$m$]
+%\item
+%Units [$m/day$] and [$g/m^3$]
+%\item
+%Units [$m$] and [$g/m^3$]
+%\item
+%Units [$day^{-1}$] and [$g/m^3$]
+%\end{itemize}
+%
+%Should the compiler simply gather the units from multiplications and divisions and determine a combined unit?
+%
+%What about alternative units? Can they be resolved in the same way, as long as there is a linear relationship? ([$mm$] and [$inch$])
+%
+%However:
+%\begin{itemize}
+%\item
+%The first component is a position -- [$m$]
+%\item
+%The second component is a velocity -- [$m/s$]
+%\end{itemize}
+%
+%
+%\emph{Consider:}
+%Units or dimensions of a more informal nature: gram chlorophyll per gram carbon.
+%
+%\emph{Consider:}
+%The intermediate dimensions/units in an expression like that of the Reynolds number.
+%
+%
+%\section{References}
+\bibliographystyle{elsarticle-harv}
+\bibliography{handling_units_dimensions}
+
+\end{document}
