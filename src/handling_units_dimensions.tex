@@ -141,7 +141,7 @@ it for years.
 \item
 \emph{Chemical formulae}:
 
-According to the Syst\`eme Internationale amounts of a substance are to be expressed in \emph{moles}, the number of molecules or atoms
+According to the Syst\`eme Internationale (SI) amounts of a substance are to be expressed in \emph{moles}, the number of molecules or atoms
 or ions divided by Avogrado's number. This is a very convenient way to do calculations regarding chemical reactions.
 For instance, this equilibrium between CO$_2$ and HCO$_3^-$ in water:
 \begin{equation}
@@ -155,6 +155,19 @@ orders of magnitude, it is essentially constant and can be absorbed in the react
 \end{equation}
 %
 \noindent but there are three molecules/ions involved, so actually three different molar units.
+
+Other units that need to be considered are:
+\begin{itemize}
+\item
+Using \emph{ml/l} as the unit for gas dissolved in water. In particular, the concentration of dissolved oxygen is
+sometimes expressed in this unit. It should be interpreted as "milliliter of dissolved oxygen per liter of water".
+\item
+The concentration of salt in sea water, salinity is expressed in units like \emph{ppt} (parts per thousand), \emph{psu}
+(practical salinity units) or \emph{1e-3}. This latter is the official unit prescribed by the "CF conventions" organisation
+\cite{CFConventionsStandardNames}.
+Since it looks very much like a plain number, supporting something like that requires extra care, also on the part of
+the programmer, one would think.
+\end{itemize}
 
 \item
 \emph{Financial/economic expressions}:
