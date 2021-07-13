@@ -22,7 +22,7 @@ two masses can be added and you can multiply or divide a mass by a length, but t
 and so should not pop up in the source code.
 
 Various solutions have been proposed for many different programming languages, but there does not seem to be a
-silver bullet (cf. \ref{ExistingSolutions}). Examination of the publications on these solutions show several
+silver bullet (cf.\ Section \ref{ExistingSolutions}). Examination of the publications on these solutions show several
 classes of solutions:
 \begin{itemize}
 \item
@@ -113,6 +113,29 @@ by length                                          &                        \\
 \noindent and possibly others. In short: expressions that involve variables and constants with units of measure can generate
 new combinations of dimensions.
 
+An obvious seeming solution is to define a specific type or an attribute representing the desired unit or
+dimension:
+
+\begin{verbatim}
+    type(length_dim)  :: radius, length
+    type(density_dim) :: density
+    type(mass_dim)    :: mass
+    real, parameter   :: pi = 3.1415926 ! Approximately
+
+    mass = pi * density * radius ** 2 * length
+\end{verbatim}
+
+At least the operations \emph{multiply} and \emph{exponentiation} should be overloaded.
+For the above formula you would also need to represent \emph{density * length} because a \emph{density} gets
+multiplied by a \emph{length}, as well as any of the other combinations.
+
+While in a given program there will be a finite number of combinations, some support from the compiler or analyser
+would help: the tool in question would then gather all the units/dimensions for each term, rather than for each
+combination separately and create the final unit/dimension. This is essentially what the package by Petty
+does \cite{PhysUnitsPetty}: for each variable of the type \verb+type(preal}+ the exponents of the basic SI dimensions are traced, so that the
+multiplication of a \emph{density} [M L$^{-3}$] and a length [L] results in an intermediate variable with dimension
+[M L$^{-2}$]. There is only a single user-defined type.
+
 It may seem that the dimensions are raised to integer powers, but rational powers can also arise, as in the period $T$ for
 a harmonic pendulum:
 \begin{equation}
@@ -138,10 +161,19 @@ This type of formula can only be used with a lot of background information, info
 comments or the documentation or simply in the heads of the users of the program, because they have been working with
 it for years.
 
+A correct way to write this formula is:
+%
+\begin{equation}
+    Q = Q_0 \cdot \bigl (\frac{h}{h_{norm}} \bigr)^{2.7}
+\end{equation}
+%
+\noindent where $Q_0 = 5.3~m^3/s$ and $h_{norm} = 1~m$, a normalisation factor, rendering the value to exponentiated
+dimensionless. Still, this leaves implicit the reference level against which the water level is measured.
+
 \item
 \emph{Chemical formulae}:
 
-According to the Syst\`eme Internationale (SI) amounts of a substance are to be expressed in \emph{moles}, the number of molecules or atoms
+According to the Syst\`eme Internationale (\emph{SI}) amounts of a substance are to be expressed in \emph{moles}, the number of molecules or atoms
 or ions divided by Avogrado's number. This is a very convenient way to do calculations regarding chemical reactions.
 For instance, this equilibrium between CO$_2$ and HCO$_3^-$ in water:
 \begin{equation}
@@ -280,6 +312,39 @@ is the \emph{maximum} function -- all of its arguments should have the same dime
 
 
 \section{Design questions}
+The requirements we can deduce from the above use cases and from general considerations can be divided
+into two categories. On the one hand we have requirements that are necessary for the feature to be at all useful, and
+on the other hand we have requirements that are nice to have but are not actually essential or might
+hinder some usages.
+
+Here is a list of both types:
+\begin{itemize}
+\item
+Requirement 1: \\
+It is essential that violations of the rules that gouvern units and dimensions be clearly identified in the
+source code. Suppose the program calls a routine that expects an acceleration as argument but gets a velocity.
+When this mistake can be detected \emph{statically}, the reported error can pinpoint the exact location. If
+a variable receives its dimension/unit as a result of some calculation, it can be very hard to identify that
+location.
+
+\item
+Requirement 2: \\
+The feature must be able to deal with different units for the same dimension. A classical example is the use of
+input in feet as the unit of length, where the program itself (or the library it uses) prefers meters.
+
+\item
+Requirement 3: \\
+The programmer should be able to define their own dimensions, not only units. This is important, because the \emph{SI}
+dimensions are but a subset of the dimensions that are really in use. This could be within the context of
+physical and chemical applications -- think of "ml oxygen per liter water" but also of financial dimensions.
+
+\item
+Requirement 4: \\
+If the feature does not support arrays whose elements have different dimensions/units of measure, then
+certain use patterns are not possible. That may or may not be a breaking requirement for the feature.
+\end{itemize}
+
+
 Notes -- to be worked out:
 
 Ideally: compile-time checks -- but completely doable?
@@ -295,6 +360,11 @@ What about performance if we need to do run-time checks?
 Burden on the programmer
 
 Error reporting
+
+
+\section{Existing solutions}
+\label{ExistingSolutions}
+TODO
 
 
 
