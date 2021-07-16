@@ -1,0 +1,14 @@
+(Plain text)
+
+Handling dimensions and units of measure in a program
+
+Most, if not all, programs that perform numerical computations of some kind or other need to deal with
+the units of measure in which their variables are expressed. Many solutions for the general problem
+have been proposed, but the problem is more difficult than it looks at first sight. For instance,
+should a program be able to handle different units (cm versus inch) automatically? Is it possible
+to check the dimensional consistency of a formula without have the programmer detailing everything?
+How to deal with similar formulae that can be applied to different quantities, like an interpolation routine?
+Are dimensions and units beyond the Système International supported? In this presentation we
+attempt to give insight in the various aspects and what existing and proposed solutions can and cannot do.
+
+
