@@ -364,9 +364,90 @@ Error reporting
 
 \section{Existing solutions}
 \label{ExistingSolutions}
-TODO
 
 
+A survey of existing solutions finds that library and language built-in solutions fall broadly into three categories.
+Each solution offers its own positive and negative aspects and trade-offs.
+We will explore the strengths and weaknesses of each from the perspectives of a library writer, an application developer, and an end user.
+
+\subsection{Define the units associated with a variable (i.e. meters, inches, etc.)}
+\label{static-units}
+
+This is the solution commonly used when such a facility is built-in to a language.
+The main benefit to such an approach is that once type-checking (or other static analysis) has been completed,
+the dimensional information is no longer needed, and the information can be ignored at run-time.
+This allows the possibility that such a solution incur no run-time overhead.
+
+From the perspective of a library writer, there are two stances that one might take.
+They could provide interfaces in only the units of their choice and be confident that they do not have any dimensional inconsistencies and incur no runtime overhead,
+or they could be quite frustrated that in order to provide an interface to a wide range of applications they must either duplicate their algorithms for all conceivably useful combinations of units, or work around the units system and lose the compile time safety it provides.
+
+An application developer will generally find this solution quite agreeable.
+It provides compile-time guarantees that their dimensional analysis is correct.
+If a library provides interfaces in the units they desire, they can be confident that the library will not incur unnecessary run-time overhead,
+and if it does not, the places in which they must do explicit unit conversions will usually be fairly limited in scope.
+It is also a natural extension of how many application developers (usually domain experts) think about their solutions,
+i.e. that the numbers in their formulas may change, but the units do not.
+
+End users of some applications may find this solution somewhat inflexible.
+It may be inconvenient for them to input values to the program in the units dictated by the application developer,
+but it would also be quite difficult for the application to deal with values input in different units,
+as it is impossible to declare a variable that does not know its units until run-time.
+Similarly it would be difficult for the program to allow the user to request outputs in different units.
+
+Defining the units associated with a variable can be provide a large amount of compile-time checking,
+incurs little to no run-time overhead, and can be a natural solution for application developers.
+However, it can often be quite inflexible in ways that make development and maintenance difficult for library writers,
+and can result in programs with inconvenient input specifications.
+Solutions of this kind are therefore most suitable for prototype development,
+but can be a long term maintenance burden for larger scale, long lived applications.
+
+\subsection{Define the dimension of a variable (i.e. length, force, etc.)}
+\label{static-dimensions}
+
+This category of solutions is not taken as frequently as the other two.
+It is usually implemented as a library, but can be an expensive library to develop and maintain.
+The development expense comes from needing to define types and units for all possible dimensions,
+as well as the mathematical operations allowed between them.
+The main benefit of this approach is that it provides additional flexibility sufficient for most library writers
+and application end users, without a large amount of run-time overhead.
+The run-time overhead comes in the form of either keeping track of a value's units, 
+or implicitly performing unit conversions at the time of value creation.
+
+From the perspective of a library writer, this solution strikes a nice balance.
+It relieves most, if not all, of the burden of providing interfaces to their algorithms for all conceivably useful combinations of units without needing to work around the units system or the compile time safety it provides.
+It does not completely eliminate duplication for algorithms that work for different dimensions however,
+for example linear solvers which could be used to solve for stress or temperature depending on the dimensions of the inputs.
+
+From the perspective of an application developer, this solution generally strikes the ideal balance.
+It still provides compile-time guarantees that their dimensional analysis is correct,
+does not incur significant run-time overhead,
+and makes it easy to provide end users the flexibility of providing inputs and requesting outputs in whatever units are most convenient.
+However, this solution will not be sufficient for more general puprose expression evaluators or calculators,
+because even the dimension of a value will not be known until run-time.
+
+End users will find this solution sufficient for most applications.
+It will be easy for application developers to allow them to provide inputs in whatever units are most convenient,
+and request outputs in whatever units they desire.
+However, general expression evaluation and calculators with units will still not be feasible with this solution.
+
+\subsection{Track the dimensions of variables at run time}
+\label{dynamic-dimensions}
+
+This category of solution is frequently used in library implementations.
+The main benefit of the approach is its high degree of flexibility.
+However, it generally comes at the expense of a high amount of run-time overhead,
+because all dimensions and units are tracked, checked, and simplified at run-time.
+
+From the perspective of a library writer, this solution eliminates any extra development and maintenance overhead,
+but still ensures that users of the library have consistent units.
+Unfortunately, it comes at the expense of significant run-time overhead.
+
+From the perspective of an application developer, it practically eliminates all of the units checking they were after.
+Any errors in the units will be found, but only at run-time, possibly far from the cause of the error.
+It does however allow for the flexiblity to develop applications which do not even know the dimensionality of their inputs until run-time.
+
+From the perspective of an end user, this solution is necessary for applications that perform general purpose calculations and expression evaluation with units.
 
 %\section{Simple examples}
 %\emph{Consider:}
