@@ -374,9 +374,14 @@ We will explore the strengths and weaknesses of each from the perspectives of a 
 \label{static-units}
 
 This is the solution commonly used when such a facility is built-in to a language.
+For example F# has such a facility~\cite{FSharpUnitsofMeasure2020}, as does Ada~\cite{DimensionalityCheckingAda}.
 The main benefit to such an approach is that once type-checking (or other static analysis) has been completed,
 the dimensional information is no longer needed, and the information can be ignored at run-time.
 This allows the possibility that such a solution incur no run-time overhead.
+There are implementations in this category which are not built into the language,
+for example the C++ library mp-units~\cite{mpunits} or the Nim library Unchained~\cite{SciNimUnchained},
+which generally require more advanced templating or type system capabilities,
+and can begin to blur the lines between this and the next category of solutions.
 
 From the perspective of a library writer, there are two stances that one might take.
 They could provide interfaces in only the units of their choice and be confident that they do not have any dimensional inconsistencies and incur no runtime overhead,
@@ -411,7 +416,7 @@ The development expense comes from needing to define types and units for all pos
 as well as the mathematical operations allowed between them.
 The main benefit of this approach is that it provides additional flexibility sufficient for most library writers
 and application end users, without a large amount of run-time overhead.
-The run-time overhead comes in the form of either keeping track of a value's units, 
+The run-time overhead comes in the form of either keeping track of a value's units,
 or implicitly performing unit conversions at the time of value creation.
 
 From the perspective of a library writer, this solution strikes a nice balance.
