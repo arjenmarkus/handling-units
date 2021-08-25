@@ -418,6 +418,7 @@ The main benefit of this approach is that it provides additional flexibility suf
 and application end users, without a large amount of run-time overhead.
 The run-time overhead comes in the form of either keeping track of a value's units,
 or implicitly performing unit conversions at the time of value creation.
+Example libraries that would fit this category are quaff~\cite{QuaffFortranPackage} and UnitsNet~\cite{Larsen2021}.
 
 From the perspective of a library writer, this solution strikes a nice balance.
 It relieves most, if not all, of the burden of providing interfaces to their algorithms for all conceivably useful combinations of units without needing to work around the units system or the compile time safety it provides.
