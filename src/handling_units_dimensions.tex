@@ -1,4 +1,6 @@
 \documentclass{article}
+\usepackage{url}
+
 \begin{document}
 
 \title{What is 1~kg + 0.1~m? Handling dimensions and units of measure in a program}
@@ -11,7 +13,7 @@
 Most, if not all, programs that perform numerical computations of some kind or other need to deal with
 the units of measure in which their variables are expressed. Many solutions for the general problem
 have been proposed, but the problem is more difficult than it looks at first sight. In this article we
-attempt to give insight in the various aspects and what the proposed solutions can and cannot do.
+aim to give insight in the various aspects and what the proposed solutions can and cannot do.
 
 \section{Introduction}
 In almost all programs that perform numerical computations the question arises whether the units of measure have
@@ -22,14 +24,14 @@ two masses can be added and you can multiply or divide a mass by a length, but t
 and so should not pop up in the source code.
 
 Various solutions have been proposed for many different programming languages, but there does not seem to be a
-silver bullet (cf.\ Section \ref{ExistingSolutions}). Examination of the publications on these solutions show several
+silver bullet (cf.\ Section \ref{ExistingSolutions}). Examination of the publications on these solutions shows several
 classes of solutions:
 \begin{itemize}
 \item
 Variables in the source code are decorated with static features that represent the units of measure
 \cite{DimensionalityCheckingAda, BlogAdaPhysicalUnitsGeneric, QuaffFortranPackage, PhysicalEngineeringUnitsN2113}. The burden is
 on the programmer to provide these features. Depending on the language they are extensions of simple floating-point numbers
-or specific additions to the language itself, requiring support from the language tools (compilers and linkers).
+or specific additions to the language itself, requiring support from the language tools (notably compilers and linkers).
 \item
 A preprocessor/static analyser is developed that helps identify violations of the arithmetic rules for units of measure
 \cite{SimConFPTCheckingUnits}.
@@ -72,6 +74,10 @@ Within a typical program, be it engineering or economical, you will find differe
 The user should be able to provide the data in a convenient form, including a convenient unit. The program may work in meters,
 but to specify the size of an atom in meters is not the most friendly possibility. Likewise for output.
 
+\subsection*{General calculator}
+As an extension of the requirement on flexible input and output, we may also want the program to support interactive use,
+as in a general calculator. Feed it data with different units of length and it prints the sum in the unit of your choice.
+
 \subsection*{Typical expressions}
 Expressions in which the variables and constants have dimensions and consequently units of measure come in various
 categories. Here are a few:
@@ -111,7 +117,8 @@ by length                                          &                        \\
 \vspace{\baselineskip}
 
 \noindent and possibly others. In short: expressions that involve variables and constants with units of measure can generate
-new combinations of dimensions.
+new combinations of dimensions. With a na\"ive implementation this can easily result in tens of thousands
+combinations \cite{UnitsOfMeasureFortran}.
 
 An obvious seeming solution is to define a specific type or an attribute representing the desired unit or
 dimension:
@@ -132,9 +139,9 @@ multiplied by a \emph{length}, as well as any of the other combinations.
 While in a given program there will be a finite number of combinations, some support from the compiler or analyser
 would help: the tool in question would then gather all the units/dimensions for each term, rather than for each
 combination separately and create the final unit/dimension. This is essentially what the package by Petty
-does \cite{PhysUnitsPetty}: for each variable of the type \verb+type(preal}+ the exponents of the basic SI dimensions are traced, so that the
+does \cite{PhysUnitsPetty}: for each variable of the type \verb+type(preal)+ the exponents of the basic SI dimensions are traced, so that the
 multiplication of a \emph{density} [M L$^{-3}$] and a length [L] results in an intermediate variable with dimension
-[M L$^{-2}$]. There is only a single user-defined type.
+[M L$^{-2}$]. Thus there is only a single user-defined type, which stores the exponents of the seven fundamental units.
 
 It may seem that the dimensions are raised to integer powers, but rational powers can also arise, as in the period $T$ for
 a harmonic pendulum:
@@ -194,7 +201,7 @@ Other units that need to be considered are:
 Using \emph{ml/l} as the unit for gas dissolved in water. In particular, the concentration of dissolved oxygen is
 sometimes expressed in this unit. It should be interpreted as "milliliter of dissolved oxygen per liter of water".
 \item
-The concentration of salt in sea water, salinity is expressed in units like \emph{ppt} (parts per thousand), \emph{psu}
+The concentration of salt in sea water, salinity, is expressed in units like \emph{ppt} (parts per thousand), \emph{psu}
 (practical salinity units) or \emph{1e-3}. This latter is the official unit prescribed by the "CF conventions" organisation
 \cite{CFConventionsStandardNames}.
 Since it looks very much like a plain number, supporting something like that requires extra care, also on the part of
@@ -207,7 +214,7 @@ the programmer, one would think.
 As engineers with physical or chemical background we are used to thinking in terms of the SI dimensions and units, or
 perhaps imperial units like inches and ounces. In other areas of computation very different dimensions are involved.
 Consider the gross domestic product, GDP. It is expressed as the amount of currency per year. And the
-exchange rate of dollars to euros or yens involve the ratio of two currencies. Formally, that may be a dimensionless
+exchange rates of dollars to euros or yens involve the ratio of two currencies. Formally, that may be a dimensionless
 value, but you should not use the wrong way around. A unit checking mechanism therefore might be required to
 distinguish the exchange rate dollar/euro from the rate euro/dollar.
 
@@ -215,7 +222,7 @@ But even seemingly dimensionless numbers require some care: the number of inhabi
 a dimension, but it does not make sense to add a bare number like $100$ to it, unless that number also represents some
 number of people.
 
-And what to think of percentages? Combining two percentages $\alpha$ and $\beta$ should be done by adding them, but by
+And what to think of percentages? Combining two percentages $\alpha$ and $\beta$ should not be done by adding them, but by
 a formula like:
 \begin{equation}
     \gamma = ((1 + \frac{\alpha}{100}) \cdot (1 + \frac{\beta}{100}) - 1) \cdot 100\%
@@ -235,7 +242,8 @@ Addition and subtraction is possible only when the dimensions of the terms are i
 Exponentiation is -- in general -- limited to rational powers. One may argue whether, like in the case of empirical
 formulae, exponentiation to some arbitrary power implicitly means the unit is ignored.
 \item
-Elementary functions as $sin$ and $log$ do not take arguments which have a dimension.
+Elementary functions as $sin$ and $log$ do not take arguments which have a dimension, though for the trigonometric functions
+they are often interpreted in \emph{radians} and alternatives may exist for arguments expressed in \emph{degrees}.
 \end{itemize}
 
 Things become much more complicated if we also require conversion of units be taken into account. Quite apart from
@@ -247,16 +255,21 @@ and $20 ^\circ C$ -- or the same values in degrees Fahrenheit. The na\"ive resul
 allowable operation, we could also convert the two terms first to kelvin and then the result would be quite different:
 $ 283 K + 293 K = 776 K$. You can, however, subtract two temperatures and you can add a temperature and a temperature difference.
 
-A second example is the position on the globe: A position of~$100^\circ$ longitude differs $10^\circ$ from a position~$110^\circ$
-(same latitude), but the distance in kilometers depends on the latitude.
+As a second example, take the \emph{decibel}, used among other things as a unit of sound. It is defined as ten times the
+logarithm of the ratio of two values. Adding two values with the unit of decibel is quite ambiguous, as can be seen
+by writing out the definitions:
+
+\begin{eqnarray}
+   dB_{a}   &=& 10 ~ \log \bigl ( \frac{V_1}{V_2} \bigr ) \\
+   dB_{b}   &=& 10 ~ \log \bigl ( \frac{V_3}{V_4} \bigr ) \\
+   dB_{a+b} &=& 10 ~ \log \bigl ( \frac{V_1 \cdot V_3}{V_2 \cdot V_4} \bigr )
+\end{eqnarray}
+
+The interpretation becomes awkward, unless there is a relation between the various values, like $V_2$ identical to $V_3$, in
+which case the summation means an \emph{increase} of the original value.
 
 Ideally, a programming solution for checking the dimensions (and units) used in a program would take all such considerations
 into account.
-
-\subsection*{General calculator}
-
-As an extension of the requirement on flexible input and output, we may also want the program to support interactive use,
-as in a general calculator. Feed it data with different units of length and it prints the sum in the unit of your choice.
 
 \subsection*{State vector}
 Some of the solutions that have been suggested define a variable to have a fixed unit or dimension. But that presents
@@ -280,9 +293,9 @@ state variables into an array and solve the system of equations via a standard O
     enddo
 \end{verbatim}
 
-\subsection{Dynamic units of measure}
+\subsection*{Dynamic units of measure}
 Another question that arises in every day programming practice is whether dimensions (or units) are static properties
-of a variable or not. \cite{SimconFPTSymbolLives} explicitly consider this possibility, as illustrated by the following
+of a variable or not. \cite{FPTSymbolLives} explicitly consider this possibility, as illustrated by the following
 code fragment:
 
 \begin{verbatim}
@@ -317,32 +330,27 @@ into two categories. On the one hand we have requirements that are necessary for
 on the other hand we have requirements that are nice to have but are not actually essential or might
 hinder some usages.
 
-Here is a list of both types:
-\begin{itemize}
-\item
-Requirement 1: \\
+Here is an overview of both types:
+
+\noindent \emph{Requirement 1:} \\
 It is essential that violations of the rules that gouvern units and dimensions be clearly identified in the
 source code. Suppose the program calls a routine that expects an acceleration as argument but gets a velocity.
 When this mistake can be detected \emph{statically}, the reported error can pinpoint the exact location. If
 a variable receives its dimension/unit as a result of some calculation, it can be very hard to identify that
 location.
 
-\item
-Requirement 2: \\
+\noindent \emph{Requirement 2:} \\
 The feature must be able to deal with different units for the same dimension. A classical example is the use of
 input in feet as the unit of length, where the program itself (or the library it uses) prefers meters.
 
-\item
-Requirement 3: \\
+\noindent \emph{Requirement 3:} \\
 The programmer should be able to define their own dimensions, not only units. This is important, because the \emph{SI}
 dimensions are but a subset of the dimensions that are really in use. This could be within the context of
 physical and chemical applications -- think of "ml oxygen per liter water" but also of financial dimensions.
 
-\item
-Requirement 4: \\
+\noindent {Requirement 4:} \\
 If the feature does not support arrays whose elements have different dimensions/units of measure, then
 certain use patterns are not possible. That may or may not be a breaking requirement for the feature.
-\end{itemize}
 
 
 Notes -- to be worked out:
@@ -429,7 +437,7 @@ From the perspective of an application developer, this solution generally strike
 It still provides compile-time guarantees that their dimensional analysis is correct,
 does not incur significant run-time overhead,
 and makes it easy to provide end users the flexibility of providing inputs and requesting outputs in whatever units are most convenient.
-However, this solution will not be sufficient for more general puprose expression evaluators or calculators,
+However, this solution will not be sufficient for more general purpose expression evaluators or calculators,
 because even the dimension of a value will not be known until run-time.
 
 End users will find this solution sufficient for most applications.
