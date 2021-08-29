@@ -81,9 +81,9 @@ as in a general calculator. Feed it data with different units of length and it p
 \subsection*{Typical expressions}
 Expressions in which the variables and constants have dimensions and consequently units of measure come in various
 categories. Here are a few:
-\begin{itemize}
-\item
-\emph{Mathematical formulae}:
+
+\vspace{\baselineskip}
+\noindent \emph{Mathematical formulae}:
 
 \noindent Consider the area of a circle:
 \begin{equation}
@@ -149,8 +149,8 @@ a harmonic pendulum:
     T = 2 \pi \sqrt{\frac{l}{g}}
 \end{equation}
 
-\item
-\emph{Empirical formulae}:
+\vspace{\baselineskip}
+\noindent \emph{Empirical formulae}:
 
 \noindent While mathematical formulae are usually rather "crisp", with clear definitions of exponents and constants, that
 is not so for empirical or semi-empirical formulae. Here is an example, a relation between the water level $h$ and the
@@ -177,10 +177,10 @@ A correct way to write this formula is:
 \noindent where $Q_0 = 5.3~m^3/s$ and $h_{norm} = 1~m$, a normalisation factor, rendering the value to exponentiated
 dimensionless. Still, this leaves implicit the reference level against which the water level is measured.
 
-\item
-\emph{Chemical formulae}:
+\vspace{\baselineskip}
+\noindent \emph{Chemical formulae}:
 
-According to the Syst\`eme Internationale (\emph{SI}) amounts of a substance are to be expressed in \emph{moles}, the number of molecules or atoms
+\noindent According to the Syst\`eme Internationale (\emph{SI}) amounts of a substance are to be expressed in \emph{moles}, the number of molecules or atoms
 or ions divided by Avogrado's number. This is a very convenient way to do calculations regarding chemical reactions.
 For instance, this equilibrium between CO$_2$ and HCO$_3^-$ in water:
 \begin{equation}
@@ -208,10 +208,10 @@ Since it looks very much like a plain number, supporting something like that req
 the programmer, one would think.
 \end{itemize}
 
-\item
-\emph{Financial/economic expressions}:
+\vspace{\baselineskip}
+\noindent \emph{Financial/economic expressions}:
 
-As engineers with physical or chemical background we are used to thinking in terms of the SI dimensions and units, or
+\noindent As engineers with physical or chemical background we are used to thinking in terms of the SI dimensions and units, or
 perhaps imperial units like inches and ounces. In other areas of computation very different dimensions are involved.
 Consider the gross domestic product, GDP. It is expressed as the amount of currency per year. And the
 exchange rates of dollars to euros or yens involve the ratio of two currencies. Formally, that may be a dimensionless
@@ -227,7 +227,6 @@ a formula like:
 \begin{equation}
     \gamma = ((1 + \frac{\alpha}{100}) \cdot (1 + \frac{\beta}{100}) - 1) \cdot 100\%
 \end{equation}
-\end{itemize}
 
 \subsection*{Dimensional analysis}
 
@@ -251,9 +250,9 @@ the vast number of units that is in use for the various basic dimensions or the 
 from them, some units of measure do not adhere to the above general rules.
 
 The first example is units of temperature other than \emph{kelvin}. Suppose you were to add a temperature of $10 ^\circ C$
-and $20 ^\circ C$ -- or the same values in degrees Fahrenheit. The na\"ive result is $30 ^\circ C$, or about $303 K$, but if this was an
+and $20 ^\circ C$ -- or the same values in degrees Fahrenheit. The na\"ive result is $30 ^\circ C$, or about $303~K$, but if this was an
 allowable operation, we could also convert the two terms first to kelvin and then the result would be quite different:
-$ 283 K + 293 K = 776 K$. You can, however, subtract two temperatures and you can add a temperature and a temperature difference.
+$ 283~K + 293~K = 776~K$. You can, however, subtract two temperatures and you can add a temperature and a temperature difference.
 
 As a second example, take the \emph{decibel}, used among other things as a unit of sound. It is defined as ten times the
 logarithm of the ratio of two values. Adding two values with the unit of decibel is quite ambiguous, as can be seen
@@ -284,8 +283,8 @@ state variables into an array and solve the system of equations via a standard O
 \begin{verbatim}
     real :: x(2)
 
-    x(1) = 1.0
-    x(2) = 0.0
+    x(1) = 1.0   ! Start position in [m]
+    x(2) = 0.0   ! Start velocity in [m/s]
 
     do i = 1,times
         call solve( x, t, dt, func )
@@ -332,47 +331,62 @@ hinder some usages.
 
 Here is an overview of both types:
 
-\noindent \emph{Requirement 1:} \\
+\vspace{\baselineskip}
+\noindent \emph{Requirement 1 (Diagnosis and error reporting):}
 It is essential that violations of the rules that gouvern units and dimensions be clearly identified in the
 source code. Suppose the program calls a routine that expects an acceleration as argument but gets a velocity.
 When this mistake can be detected \emph{statically}, the reported error can pinpoint the exact location. If
 a variable receives its dimension/unit as a result of some calculation, it can be very hard to identify that
 location.
 
-\noindent \emph{Requirement 2:} \\
-The feature must be able to deal with different units for the same dimension. A classical example is the use of
-input in feet as the unit of length, where the program itself (or the library it uses) prefers meters.
+Error reporting should be as accurate as possible, both concerning the character and the location in the program.
 
-\noindent \emph{Requirement 3:} \\
+\vspace{\baselineskip}
+\noindent \emph{Requirement 2 (Flexibility in units):}
+The feature must be able to deal with different units for the same dimension. A classical example is the use of
+input in feet as the unit of length, where the program itself (or the library it uses) prefers meters. Similarly,
+it will be important to produce output in suitable units.
+
+\vspace{\baselineskip}
+\noindent \emph{Requirement 3 (Flexibility in dimensions):}
 The programmer should be able to define their own dimensions, not only units. This is important, because the \emph{SI}
 dimensions are but a subset of the dimensions that are really in use. This could be within the context of
 physical and chemical applications -- think of "ml oxygen per liter water" but also of financial dimensions.
 
-\noindent {Requirement 4:} \\
+\vspace{\baselineskip}
+\noindent \emph{Requirement 4 (Arrays with units):}
 If the feature does not support arrays whose elements have different dimensions/units of measure, then
 certain use patterns are not possible. That may or may not be a breaking requirement for the feature.
 
+\vspace{\baselineskip}
+\noindent \emph{Requirement 5 (Static or dynamic units for variables):}
+If the feature allows variables to have different units, depending on where they are used in the program, this
+may hinder static analysis and it may also hide mistakes. If that is not allowed, variables will have to be
+declared to have certain units and this puts an extra burden on the programmer.
 
-Notes -- to be worked out:
+\vspace{\baselineskip}
+\noindent \emph{Requirement 6 (Static or dynamic units for function results and arguments):}
+If the feature does not allow functions to take arguments with different units and produce results with units derived
+from the arguments, it will be difficult to write a generally applicable library that can handle units consistently.
+For instance, a library that solves differential equations will need to handle any conceivable units for the
+dependent and independent variables. Writing a version for each unit separately is prohibitively expensive.
 
-Ideally: compile-time checks -- but completely doable?
+\vspace{\baselineskip}
+\noindent \emph{Requirement 7 (Performance):}
+There should not be any noticeable effect on the performance of a program that handles units versus the same program
+that does not handle units explicitly, with a possible exception for input and output unit conversions. Of course, this
+is met much easier by solutions that use static analyis than by solutions that check the units at run-time.
 
-Input and output -- respect the units
-
-Distinction between units and dimensions
-
-Should variables have a fixed dimension or a fixed unit?
-
-What about performance if we need to do run-time checks?
-
-Burden on the programmer
-
-Error reporting
+\vspace{\baselineskip}
+\noindent \emph{Requirement 8 (Programming effort):}
+While explicitly declaring the units of variables in a program will save a lot of debugging effort, the extra effort
+should not get in the way of using the feature. This may mean that a pre=defined set of units be available, so that
+a programmer does not need to start from scratch for each new program. Declaring the unit for a variable is inevitable,
+but defining the units and possibly conversions between them ought to be a matter of supplying a suitable units library.
 
 
 \section{Existing solutions}
 \label{ExistingSolutions}
-
 
 A survey of existing solutions finds that library and language built-in solutions fall broadly into three categories.
 Each solution offers its own positive and negative aspects and trade-offs.
