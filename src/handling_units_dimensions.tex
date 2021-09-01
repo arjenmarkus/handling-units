@@ -401,7 +401,7 @@ The main benefit to such an approach is that once type-checking (or other static
 the dimensional information is no longer needed, and the information can be ignored at run-time.
 This allows the possibility that such a solution incur no run-time overhead.
 There are implementations in this category which are not built into the language,
-for example the C++ library mp-units~\cite{mpunits} or the Nim library Unchained~\cite{SciNimUnchained},
+for example the C++ library mp-units~\cite{mpunits}, the Rust library Dimensioned~\cite{RustDimensioned}, or the Nim library Unchained~\cite{SciNimUnchained},
 which generally require more advanced templating or type system capabilities,
 and can begin to blur the lines between this and the next category of solutions.
 
@@ -466,6 +466,8 @@ This category of solution is frequently used in library implementations.
 The main benefit of the approach is its high degree of flexibility.
 However, it generally comes at the expense of a high amount of run-time overhead,
 because all dimensions and units are tracked, checked, and simplified at run-time.
+Example libraries that fit this category are more common in interpreted languages,
+for example the Python library pint~\cite{Grecco2021} or the Ruby library Ruby Units~\cite{Olbrich2021}.
 
 From the perspective of a library writer, this solution eliminates any extra development and maintenance overhead,
 but still ensures that users of the library have consistent units.
