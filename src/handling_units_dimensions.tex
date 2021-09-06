@@ -15,6 +15,10 @@ the units of measure in which their variables are expressed. Many solutions for 
 have been proposed, but the problem is more difficult than it looks at first sight. In this article we
 aim to give insight in the various aspects and what the proposed solutions can and cannot do.
 
+
+\section{TODO}
+TODO: add SI units package to tex-file
+
 \section{Introduction}
 In almost all programs that perform numerical computations the question arises whether the units of measure have
 been treated correctly. For instance: the sum of a variable that represents a mass and a variable that represents
@@ -34,7 +38,7 @@ on the programmer to provide these features. Depending on the language they are 
 or specific additions to the language itself, requiring support from the language tools (notably compilers and linkers).
 \item
 A preprocessor/static analyser is developed that helps identify violations of the arithmetic rules for units of measure
-\cite{SimConFPTCheckingUnits}.
+\cite{SimConFPTCheckingUnits,CamFortCorrectness}.
 Typically, the programmer annotates the variables via special comments, so that the analysis can be refined.
 \item
 Rather than a static checker in the form of a compiler or a preprocessor, all (relevant) variables are defined to have
@@ -68,7 +72,7 @@ expressions like 1~m~+~10~inch very much depends on whehther it does \emph{unit 
 
 
 \section{Design questions}
-The requirements we can deduce from available use cases and from general considerations can be divided
+The requirements we can deduce from available use cases (Section \ref{UseCases}) and from general considerations can be divided
 into two categories. On the one hand we have requirements that are necessary for the feature to be at all useful, and
 on the other hand we have requirements that are nice to have but are not actually essential or might
 hinder some usages.
@@ -76,7 +80,7 @@ hinder some usages.
 Here is an overview of both types:
 
 \vspace{\baselineskip}
-\noindent \emph{Requirement 1 (Diagnosis and error reporting):}
+\noindent \emph{Requirement 1 (Diagnostics and error reporting):}
 It is essential that violations of the rules that gouvern units and dimensions be clearly identified in the
 source code. Suppose the program calls a routine that expects an acceleration as argument but gets a velocity.
 When this mistake can be detected \emph{statically}, the reported error can pinpoint the exact location. If
@@ -95,7 +99,7 @@ it will be important to produce output in suitable units.
 \noindent \emph{Requirement 3 (Flexibility in dimensions):}
 The programmer should be able to define their own dimensions, not only units. This is important, because the \emph{SI}
 dimensions are but a subset of the dimensions that are really in use. This could be within the context of
-physical and chemical applications -- think of "ml oxygen per liter water" but also of financial dimensions.
+physical and chemical applications -- think of "milliliter oxygen per liter water" but also of financial or other dimensions.
 
 \vspace{\baselineskip}
 \noindent \emph{Requirement 4 (Arrays with units):}
@@ -119,12 +123,12 @@ dependent and independent variables. Writing a version for each unit separately 
 \noindent \emph{Requirement 7 (Performance):}
 There should not be any noticeable effect on the performance of a program that handles units versus the same program
 that does not handle units explicitly, with a possible exception for input and output unit conversions. Of course, this
-is met much easier by solutions that use static analysis than by solutions that check the units at run-time.
+requirement is met much easier by solutions that use static analysis than by solutions that check the units at run-time.
 
 \vspace{\baselineskip}
 \noindent \emph{Requirement 8 (Programming effort):}
 While explicitly declaring the units of variables in a program will save a lot of debugging effort, the extra effort
-should not get in the way of using the feature. This may mean that a pre=defined set of units be available, so that
+should not get in the way of using the feature. This may mean that a predefined set of units be available, so that
 a programmer does not need to start from scratch for each new program. Declaring the unit for a variable is inevitable,
 but defining the units and possibly conversions between them ought to be a matter of supplying a suitable units library.
 
@@ -166,7 +170,7 @@ but it would also be quite difficult for the application to deal with values inp
 as it is impossible to declare a variable that does not know its units until run-time.
 Similarly it would be difficult for the program to allow the user to request outputs in different units.
 
-Defining the units associated with a variable can be provide a large amount of compile-time checking,
+Defining the units associated with a variable can provide a large amount of compile-time checking,
 incurs little to no run-time overhead, and can be a natural solution for application developers.
 However, it can often be quite inflexible in ways that make development and maintenance difficult for library writers,
 and can result in programs with inconvenient input specifications.
@@ -224,17 +228,19 @@ It does however allow for the flexiblity to develop applications which do not ev
 From the perspective of an end user, this solution is necessary for applications that perform general purpose calculations and expression evaluation with units.
 
 \section{Use cases}
-Within a typical program, be it engineering or economical, you will find different usage patterns:
+\label{UseCases}
+Within a typical program, be it engineering or economical, you will find different usage patterns and the question is
+which of these can and cannot be supported by the current set of solutions:
 
-\subsection*{Input/output}
+\subsection*{Input/output -- flexibility in units}
 The user should be able to provide the data in a convenient form, including a convenient unit. The program may work in meters,
 but to specify the size of an atom in meters is not the most friendly possibility. Likewise for output.
 
-\subsection*{General calculator}
+\subsection*{General calculator -- flexibility in units and dimensions}
 As an extension of the requirement on flexible input and output, we may also want the program to support interactive use,
 as in a general calculator. Feed it data with different units of length and it prints the sum in the unit of your choice.
 
-\subsection*{Typical expressions}
+\subsection*{Typical expressions -- flexibility in units and dimensions, static or dynamic units for function results and arguments}
 Expressions in which the variables and constants have dimensions and consequently units of measure come in various
 categories. Here are a few:
 
@@ -384,7 +390,7 @@ a formula like:
     \gamma = ((1 + \frac{\alpha}{100}) \cdot (1 + \frac{\beta}{100}) - 1) \cdot 100\%
 \end{equation}
 
-\subsection*{Dimensional analysis}
+\subsection*{Dimensional analysis -- diagnostics and error reporting}
 
 The very least we may require from a solution for the problem we consider here is that it checks the dimensional correctness
 of expressions. This means that the arithmetic for dimensions is checked and verified \cite{DimensionalAnalysis}:
@@ -426,7 +432,7 @@ which case the summation means an \emph{increase} of the original value.
 Ideally, a programming solution for checking the dimensions (and units) used in a program would take all such considerations
 into account.
 
-\subsection*{State vector}
+\subsection*{State vector -- arrays with units}
 Some of the solutions that have been suggested define a variable to have a fixed unit or dimension. But that presents
 a problem if you have an array of which each element can have a different dimension. Here is a simple example,
 a (forced) harmonic oscillator:
@@ -448,7 +454,7 @@ state variables into an array and solve the system of equations via a standard O
     enddo
 \end{verbatim}
 
-\subsection*{Dynamic units of measure}
+\subsection*{Dynamic units of measure -- static or dynamic units for variables}
 Another question that arises in every day programming practice is whether dimensions (or units) are static properties
 of a variable or not. \cite{FPTSymbolLives} explicitly consider this possibility, as illustrated by the following
 code fragment:
@@ -473,10 +479,54 @@ ENDDO
 
 The variable \verb+temp+ is used first as a weight ($M$) and then as a height ($L$). If the dimension of each variable were
 a static property -- which allows checking at compile-time -- then this usage pattern would be prohibited. In the proposal
-by \cite{PhysicalEngineeringUnitsN2113} a similar situation is described: here it is suggested to allow dimensionally polymorphic
+by V. Snyder \cite{UnitsOfMeasureFortran,PhysicalEngineeringUnitsN2113} a similar situation is described: here it is suggested to allow dimensionally polymorphic
 functions that inherit the dimension of the result from their arguments. One example, mentioned in \cite{SimConFPTCheckingUnits},
 is the \emph{maximum} function -- all of its arguments should have the same dimension (unit) and the result will be that dimension
 (or, more precisely, unit).
+
+
+\section{Suitability of the existing solutions}
+
+Given the wide range of usage patterns and the requirements that can be distilled from them, what solutions fit best?
+To answer this question let us examine how the requirements are met. We concentrate on packages suitable for use with Fortran
+programs.
+
+\begin{table}
+\begin{tabular}{lllll}
+                      & \emph{Static}     & \emph{Library}    & \emph{Dynamic}    & \emph{Preprocessor} \\
+                      & \emph{definition} & \emph{approach}   & \emph{checking}   &                     \\
+\emph{Requirement}    & \cite{UnitsOfMeasureFortran} & \cite{QuaffFortranPackage} & \cite{GrantPettyPhysUnits} & \cite{SimConFPTCheckingUnits} \\
+                      &                              &                            &                            & \cite{CamFortCorrectness} \\
+\hline
+Diagnostics           & Exact location    & Possibly later    & Later             & Exact location      \\
+Flexible units        & Yes               & Yes               & No                & Yes                 \\
+Flexible dimensions   & Yes               & Yes               & No                & Yes                 \\
+Arrays with units     & No                & No                & Yes               & No (difficult)      \\
+Units of variables    & Static            & Static            & Dynamic           & Dynamic (lifetime)  \\
+Units of arguments    & Derived           & Static (?)        & Dynamic           & Derived             \\
+Performance           & Compile-time      & Compile-time      & Affected          & Compile-time        \\
+Programming effort    & Medium            & Large             & Medium            & Medium              \\
+\end{tabular}
+\end{table}
+
+The solutions that facilitate static definitions of the variables require support in one way or another from the
+programming language. The proposal for Fortran \cite{UnitsOfMeasureFortran} relies on a new keyword \verb+unit+ and
+the associated semantics. This means that checking can be done fully or almost fully at compile-time, thus reducing effects
+on the performance. Via the mechanism of \emph{abstract} units it allows functions and subroutines to be generic in their
+way of handling units. The only use cases/requirements that are not supported are those where the variable should change
+its unit or where the variable represents an array of different quantities, each with its own unit.
+
+The preprocessing solutions are perhaps the most flexible, as they do not require built-in language support and do
+support variables whose units depend on the context. However, they are commonly implemented as separate tools and thus
+complicate the build process.
+
+For library solutions like \cite{QuaffFortranPackage} supporting a particular set of units means that suitable unit
+conversion routines are needed. While this is not impossible, and in fact it adds to the flexibility of the package,
+it does represent a significant burden, if these routines have not been defined already. This is the reason for
+marking the programming effort as "large".
+
+In all cases the burden for specifying the correct units is on the programmer, even if some tools can deduce the units from
+the source code but the rewards for using consistent and verifiable units far outweight that burden.
 
 
 %\section{Simple examples}
