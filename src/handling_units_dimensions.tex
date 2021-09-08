@@ -248,6 +248,62 @@ which of these can and cannot be supported by the current set of solutions:
 The user should be able to provide the data in a convenient form, including a convenient unit. The program may work in meters,
 but to specify the size of an atom in meters is not the most friendly possibility. Likewise for output.
 
+As an example, let's consider a hypothetical calculator for determining average speed.
+Given a list of distances covered and times taken for each, we can calculate an average speed.
+Such a program would be valid for caluclating the average speed of anything from the random walk of a particle in a fluid,
+to the average speed of a contestant on an obstacle course,
+to the average speed of an airplane on it's daily route.
+The units we would like to input and receive from such a program are different, but the algorithm is the same.
+The example program might look something like the following, with different input files as shown after.
+
+\begin{verbatim}
+program speed_calculator
+  use units ! some hypothetical module providing the types and operators used below
+  implicit none
+  integer :: num_legs
+  type(length_unit) :: distance_units
+  real, allocatable :: distances(:)
+  type(time_unit) :: time_units
+  real, allocatable :: times(:)
+  type(speed) :: average_speed
+  type(speed_unit) :: output_units
+  ! determine the input file name and open it
+  read(input_file, *) num_legs, distance_units, time_units, output_units
+  allocate(distances(num_legs), times(num_legs))
+  read(input_file, *) distances
+  read(input_file, *) times
+  average_speed = sum(distances*distance_units) / sum(times*time_units)
+  print *, average_speed.in.output_units
+end program
+\end{verbatim}
+
+Then the input files for calculating a particle's average speed could look like,
+
+\begin{verbatim}
+5, "nm", "ns", "m/s"
+11.4, 12.2, 9.7, 13.1, 12.5
+8.6, 7.9, 9.1, 10.2, 9.8
+\end{verbatim}
+
+for calculating a runner's average speed could look like,
+
+\begin{verbatim}
+6, "ft", "s", "mile/hr"
+11.4, 12.2, 9.7, 13.1, 12.5, 8.4
+8.6, 7.9, 9.1, 10.2, 9.8, 10.3
+\end{verbatim}
+
+and for calculating a plane's average speed could look like,
+
+\begin{verbatim}
+4, "mile", "hr", "km/d"
+275, 315, 395, 245
+1.5, 2.5, 2.75, 2.0
+\end{verbatim}
+
+In this case one can see how specifying a variable's units is too restrictive,
+but not specifying it's dimensionality leaves the code too vague.
+
 \subsection*{General calculator -- flexibility in units and dimensions}
 As an extension of the requirement on flexible input and output, we may also want the program to support interactive use,
 as in a general calculator. Feed it data with different units of length and it prints the sum in the unit of your choice.
