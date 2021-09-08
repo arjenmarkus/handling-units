@@ -1,5 +1,6 @@
 \documentclass{article}
 \usepackage{url}
+%\usepackage{siunitx}
 
 \begin{document}
 
@@ -18,6 +19,10 @@ aim to give insight in the various aspects and what the proposed solutions can a
 
 \section{TODO}
 TODO: add SI units package to tex-file
+
+TODO: more descriptions -- comments as annotations are rather non-committal
+
+TODO: examples in "Existing solutions" -- also preprocessors as category
 
 \section{Introduction}
 In almost all programs that perform numerical computations the question arises whether the units of measure have
@@ -68,7 +73,8 @@ Many solutions that help verifying that the program code does the right thing as
 limit themselves to \emph{dimensional analysis}. Small wonder, because the \emph{units of measure} in which the actual
 value of a quantity is expressed, are legion: common units for length are meter, centimeter, inch, foot, kilometer, mile and
 so on. Each has the dimension of length, but each is numerically different. So, whether the solution allows you to work with
-expressions like 1~m~+~10~inch very much depends on whehther it does \emph{unit conversions} or not.
+expressions like $1~m + 10~inch$ very much depends on whether it does \emph{unit conversions} or not.
+%expressions like \qty{1}{\metre}+\qty{10}{\inch} very much depends on whehther it does \emph{unit conversions} or not.
 
 
 \section{Design questions}
@@ -195,6 +201,9 @@ It relieves most, if not all, of the burden of providing interfaces to their alg
 It does not completely eliminate duplication for algorithms that work for different dimensions however,
 for example linear solvers which could be used to solve for stress or temperature depending on the dimensions of the inputs.
 
+The proposal by \cite{UnitsOfMeasureFortran} solves this situation by explicitly allow so-called \emph{abstract}
+units, units that take their identity from the arguments of the function or subroutine in which they are used.
+
 From the perspective of an application developer, this solution generally strikes the ideal balance.
 It still provides compile-time guarantees that their dimensional analysis is correct,
 does not incur significant run-time overhead,
@@ -226,6 +235,9 @@ Any errors in the units will be found, but only at run-time, possibly far from t
 It does however allow for the flexiblity to develop applications which do not even know the dimensionality of their inputs until run-time.
 
 From the perspective of an end user, this solution is necessary for applications that perform general purpose calculations and expression evaluation with units.
+
+\subsection{Preprocessing the source code}
+TODO
 
 \section{Use cases}
 \label{UseCases}
@@ -336,7 +348,8 @@ A correct way to write this formula is:
     Q = Q_0 \cdot \bigl (\frac{h}{h_{norm}} \bigr)^{2.7}
 \end{equation}
 %
-\noindent where $Q_0 = 5.3~m^3/s$ and $h_{norm} = 1~m$, a normalisation factor, rendering the value to exponentiated
+%\noindent where $Q_0 = \qty{5.3}{\cubic\metre\per\second$ and $h_{norm} = \qty{1}{\metre}$, a normalisation factor, rendering the value to exponentiated
+\noindent where $Q_0 = 5.3 m^3/s$ and $h_{norm} = 1~m$, a normalisation factor, rendering the value to exponentiated
 dimensionless. Still, this leaves implicit the reference level against which the water level is measured.
 
 \vspace{\baselineskip}
@@ -411,8 +424,8 @@ Things become much more complicated if we also require conversion of units be ta
 the vast number of units that is in use for the various basic dimensions or the combined dimensions that are derived
 from them, some units of measure do not adhere to the above general rules.
 
-The first example is units of temperature other than \emph{kelvin}. Suppose you were to add a temperature of $10 ^\circ C$
-and $20 ^\circ C$ -- or the same values in degrees Fahrenheit. The na\"ive result is $30 ^\circ C$, or about $303~K$, but if this was an
+The first example is units of temperature other than \emph{kelvin}. Suppose you were to add a temperature of $10 \circ C$
+and $20 \circ C$ -- or the same values in degrees Fahrenheit. The na\"ive result is $30 \circ C$, or about $303~K$, but if this was an
 allowable operation, we could also convert the two terms first to kelvin and then the result would be quite different:
 $ 283~K + 293~K = 776~K$. You can, however, subtract two temperatures and you can add a temperature and a temperature difference.
 
@@ -491,21 +504,26 @@ Given the wide range of usage patterns and the requirements that can be distille
 To answer this question let us examine how the requirements are met. We concentrate on packages suitable for use with Fortran
 programs.
 
+TODO: Refine the table
+
+TODO: Extend the text
+
 \begin{table}
+\caption{Overview of the various possible solutions in relation to the requirements}
 \begin{tabular}{lllll}
-                      & \emph{Static}     & \emph{Library}    & \emph{Dynamic}    & \emph{Preprocessor} \\
-                      & \emph{definition} & \emph{approach}   & \emph{checking}   &                     \\
-\emph{Requirement}    & \cite{UnitsOfMeasureFortran} & \cite{QuaffFortranPackage} & \cite{GrantPettyPhysUnits} & \cite{SimConFPTCheckingUnits} \\
-                      &                              &                            &                            & \cite{CamFortCorrectness} \\
+                         & \emph{Static}     & \emph{Library}    & \emph{Dynamic}    & \emph{Preprocessor} \\
+                         & \emph{definition} & \emph{approach}   & \emph{checking}   &                     \\
+\emph{Requirement}       & \cite{UnitsOfMeasureFortran} & \cite{QuaffFortranPackage} & \cite{GrantPettyPhysUnits} & \cite{SimConFPTCheckingUnits} \\
+                         &                              &                            &                            & \cite{CamFortCorrectness} \\
 \hline
-Diagnostics           & Exact location    & Possibly later    & Later             & Exact location      \\
-Flexible units        & Yes               & Yes               & No                & Yes                 \\
-Flexible dimensions   & Yes               & Yes               & No                & Yes                 \\
-Arrays with units     & No                & No                & Yes               & No (difficult)      \\
-Units of variables    & Static            & Static            & Dynamic           & Dynamic (lifetime)  \\
-Units of arguments    & Derived           & Static (?)        & Dynamic           & Derived             \\
-Performance           & Compile-time      & Compile-time      & Affected          & Compile-time        \\
-Programming effort    & Medium            & Large             & Medium            & Medium              \\
+Diagnostics (1)          & Exact location    & Possibly later    & Later             & Exact location      \\
+Flexible units (2)       & Yes               & Yes               & No                & Yes                 \\
+Flexible dimensions (3)  & Yes               & Yes               & No                & Yes                 \\
+Arrays with units (4)    & No                & No                & Yes               & No (difficult)      \\
+Units of variables (5)   & Static            & Static            & Dynamic           & Dynamic (lifetime)  \\
+Units of arguments (6)   & Derived           & Static (?)        & Dynamic           & Derived             \\
+Performance (7)          & Compile-time      & Compile-time      & Affected          & Compile-time        \\
+Programming effort (8)   & Medium            & Large             & Medium            & Medium              \\
 \end{tabular}
 \end{table}
 
@@ -526,7 +544,7 @@ it does represent a significant burden, if these routines have not been defined 
 marking the programming effort as "large".
 
 In all cases the burden for specifying the correct units is on the programmer, even if some tools can deduce the units from
-the source code but the rewards for using consistent and verifiable units far outweight that burden.
+the source code but the rewards for using consistent and verifiable units far outweigh that burden.
 
 
 %\section{Simple examples}
@@ -580,7 +598,8 @@ the source code but the rewards for using consistent and verifiable units far ou
 %
 %
 %\section{References}
-\bibliographystyle{elsarticle-harv}
+%\bibliographystyle{elsarticle-harv}
+\bibliographystyle{alpha}
 \bibliography{handling_units_dimensions}
 
 \end{document}
