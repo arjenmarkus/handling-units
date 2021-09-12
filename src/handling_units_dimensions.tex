@@ -142,7 +142,7 @@ but defining the units and possibly conversions between them ought to be a matte
 \section{Existing solutions}
 \label{ExistingSolutions}
 
-A survey of existing solutions finds that library and language built-in solutions fall broadly into three categories.
+A survey of existing solutions finds that library and language built-in solutions fall broadly into four categories.
 Each solution offers its own positive and negative aspects and trade-offs.
 We will explore the strengths and weaknesses of each from the perspectives of a library writer, an application developer, and an end user.
 
@@ -162,6 +162,8 @@ and can begin to blur the lines between this and the next category of solutions.
 From the perspective of a library writer, there are two stances that one might take.
 They could provide interfaces in only the units of their choice and be confident that they do not have any dimensional inconsistencies and incur no runtime overhead,
 or they could be quite frustrated that in order to provide an interface to a wide range of applications they must either duplicate their algorithms for all conceivably useful combinations of units, or work around the units system and lose the compile time safety it provides.
+The proposal by \cite{UnitsOfMeasureFortran} solves this situation by explicitly allow so-called \emph{abstract}
+units, units that take their identity from the arguments of the function or subroutine in which they are used.
 
 An application developer will generally find this solution quite agreeable.
 It provides compile-time guarantees that their dimensional analysis is correct.
@@ -201,8 +203,7 @@ It relieves most, if not all, of the burden of providing interfaces to their alg
 It does not completely eliminate duplication for algorithms that work for different dimensions however,
 for example linear solvers which could be used to solve for stress or temperature depending on the dimensions of the inputs.
 
-The proposal by \cite{UnitsOfMeasureFortran} solves this situation by explicitly allow so-called \emph{abstract}
-units, units that take their identity from the arguments of the function or subroutine in which they are used.
+The abstracts units proposed by \cite{UnitsOfMeasureFortran} again solve this situation explicitly.
 
 From the perspective of an application developer, this solution generally strikes the ideal balance.
 It still provides compile-time guarantees that their dimensional analysis is correct,
@@ -237,7 +238,36 @@ It does however allow for the flexiblity to develop applications which do not ev
 From the perspective of an end user, this solution is necessary for applications that perform general purpose calculations and expression evaluation with units.
 
 \subsection{Preprocessing the source code}
-TODO
+The fourth category of solutions consists of preprocessors: these tools analyse the source code and deduce the use
+of units and dimensions from the actual source. Two such tools are: \emph{fpt} \cite{SimConFPTCheckingUnits} and \emph{Camfort}
+\cite{CamFortCorrectness}. From the point of view of a library writer and an application developer, the use is very much
+the same. Via an extra step in the build process they check the source code (in much the same way as a compiler does) and
+report anything that is not correct, that is, violations against the rules by which values with units can be used. With respect
+to libraries, the same problem as with the first category occurs, there is no mechanism to support different unit systems
+automatically.
+
+To help the tool the programmer can annotate the variables with unit information, mostly via specific comments to the declaration. This means
+very little support from the programming language is needed, unlike in the first category, but the comments do not form
+an integral part of the declaration and thus may get forgotten about.
+
+Here is an example taken from \cite{CamFortCorrectness} (the \emph{fpt} tool does not support such annotations):
+\begin{verbatim}
+program energy
+  != unit kg :: mass
+  != unit m/s**2 :: gravity
+  real, parameter :: mass = 3.00, gravity = 9.81, height = 4.20
+  != unit kg m**2/s**2
+  real :: potential_energy
+
+  potential_energy = mass * gravity * height
+end program energy
+\end{verbatim}
+
+In this fragment the unit of the parameter \verb+height+ was not specified and instead it is inferred from the usage
+in the calculation of the potential energy.
+
+The end user, though, does not notice anything -- there is no mechanism provided to deal with different units than the
+ones built in to the application in the first. That burden lies with the programmer.
 
 \section{Use cases}
 \label{UseCases}
@@ -480,8 +510,8 @@ Things become much more complicated if we also require conversion of units be ta
 the vast number of units that is in use for the various basic dimensions or the combined dimensions that are derived
 from them, some units of measure do not adhere to the above general rules.
 
-The first example is units of temperature other than \emph{kelvin}. Suppose you were to add a temperature of $10 \circ C$
-and $20 \circ C$ -- or the same values in degrees Fahrenheit. The na\"ive result is $30 \circ C$, or about $303~K$, but if this was an
+The first example is units of temperature other than \emph{kelvin}. Suppose you were to add a temperature of $10^\circ C$
+and $20^\circ C$ -- or the same values in degrees Fahrenheit. The na\"ive result is $30^\circ C$, or about $303~K$, but if this was an
 allowable operation, we could also convert the two terms first to kelvin and then the result would be quite different:
 $ 283~K + 293~K = 776~K$. You can, however, subtract two temperatures and you can add a temperature and a temperature difference.
 
@@ -516,12 +546,37 @@ state variables into an array and solve the system of equations via a standard O
 
     x(1) = 1.0   ! Start position in [m]
     x(2) = 0.0   ! Start velocity in [m/s]
+    dt   = 1.0   ! Time step in [s]
 
-    do i = 1,times
+    do i = 0,times
+        t = i * dt
         call solve( x, t, dt, func )
         write(*,*) t, x
     enddo
 \end{verbatim}
+
+A library such as described in [GrantPettyPhysUnits] provides an easy solution:
+
+\begin{verbatim}
+    use SI_units ! this module uses "physunits", so no need to get that explicitly
+
+    type(preal) :: x(2), t, dt
+
+    x(1) = 1.0 * u_meter             ! Start position in [m]
+    x(2) = 0.0 * u_meter / u_second  ! Start velocity in [m/s]
+    t    = 0.0 * u_second            ! Time in [s]
+    dt   = 1.0 * u_second            ! Time step in [s]
+
+    do i = 0,times
+        t = i * dt
+        call solve( x, t, dt, func )
+        write(*,*) real(t), real(x)
+    enddo
+\end{verbatim}
+
+To preserve the unit/dimension information the \verb+solve+ and \verb+func+ subroutine and function
+must adopt the same approach.
+
 
 \subsection*{Dynamic units of measure -- static or dynamic units for variables}
 Another question that arises in every day programming practice is whether dimensions (or units) are static properties
@@ -534,10 +589,10 @@ change_f = .TRUE.
 DO WHILE (change_f)
     DO i = 2, n
         IF (weight(i) < weight(i-1)) THEN
-            temp = weight( i )
+            temp = weight( i )            !<-- unit of temp: mass
             weight( i ) = weight( i-1 )
             weight( i-1 ) = temp
-            temp = height( i )
+            temp = height( i )            !<-- unit of temp: length
             height( i ) = height( i-1 )
             height( i-1 ) = temp
             change_f = .TRUE.
@@ -654,8 +709,7 @@ the source code but the rewards for using consistent and verifiable units far ou
 %
 %
 %\section{References}
-%\bibliographystyle{elsarticle-harv}
-\bibliographystyle{alpha}
+\bibliographystyle{elsarticle-harv}
 \bibliography{handling_units_dimensions}
 
 \end{document}
