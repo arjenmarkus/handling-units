@@ -23,6 +23,7 @@ jobs:
     - name: Install Ubuntu Dependencies
       run: |
         wget ${{ env.TEXTIDOTE_URL }}
+        sudo apt update
         sudo apt-get install -y ./textidote*.deb
         sudo pip3 install codespell
 
@@ -40,7 +41,9 @@ jobs:
         git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
 
     - name: Install Ubuntu Dependencies
-      run: sudo apt install ${{ env.APT_DEPS }}
+      run: |
+        sudo apt update
+        sudo apt install -y ${{ env.APT_DEPS }}
 
     - name: Compile paper
       run : make
